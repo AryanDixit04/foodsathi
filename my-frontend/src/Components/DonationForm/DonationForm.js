@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import './DonationForm.css';
 import LoadingDialog from '../LoadingDialog/LoadingDialog';
 import MatchFoundDialog from '../MatchFoundDialog/MatchFoundDialog';
 import MatchNotFound from '../MatchNotFound/MatchNotFound';
@@ -19,7 +20,7 @@ function DonationForm() {
   const [matchNotFound, setMatchNotFound] = useState(false);
   const [isMatchFound, setIsMatchFound] = useState(false);
   const [donorName] = useState(formData.name);
-  const receiverName = ''; // Replace with actual receiver name
+  const receiverName = ""; // Replace with actual receiver name
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -55,14 +56,13 @@ function DonationForm() {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
     setTimeout(() => {
       setIsLoading(false);
-      const isMatch = false; // Replace with actual match-checking logic
-      if (isMatch) {
+      if (/* replace with match-check logic */ false) {
         setIsMatchFound(true);
       } else {
         setMatchNotFound(true);
@@ -71,9 +71,8 @@ function DonationForm() {
       console.log("Current Location:", location);
     }, 3000);
   };
-
-  const handleTrack = () => {
-    alert('Tracking started!');
+  const handleTrack=() => {
+    alert("Tracking started!");
   };
 
   const closeModal = () => {
@@ -84,15 +83,8 @@ function DonationForm() {
   return (
     <div className="donation-section">
       {isLoading && <LoadingDialog />}
-      {isMatchFound && (
-        <MatchFoundDialog
-          donorName={donorName}
-          receiverName={receiverName}
-          onClose={closeModal}
-          onTrack={handleTrack}
-        />
-      )}
-
+      {isMatchFound && <MatchFoundDialog donorName={donorName} receiverName={receiverName} onClose={closeModal} onTrack={handleTrack} />}
+      
       {matchNotFound && (
         <div className="overlay">
           <MatchNotFound onClose={closeModal} />
@@ -100,7 +92,7 @@ function DonationForm() {
       )}
 
       <form className="donation-form" onSubmit={handleSubmit}>
-        <h2>Donate Food</h2>
+        <h2>Donation Form</h2>
         {error && <p className="error">{error}</p>}
 
         <label>
@@ -108,7 +100,7 @@ function DonationForm() {
           <input type="text" name="name" value={formData.name} onChange={handleChange} required />
         </label>
         <label>
-          Place:
+          Location:
           <input type="text" name="place" value={formData.place} onChange={handleChange} required />
         </label>
         <label>
@@ -120,11 +112,11 @@ function DonationForm() {
           <input type="email" name="email" value={formData.email} onChange={handleChange} required />
         </label>
         <label>
-          Amount:
+          Quantity donated:
           <input type="number" name="amount" value={formData.amount} onChange={handleChange} required />
         </label>
         <label>
-          Description of Food:
+          Description of Donation with expiry:
           <textarea name="description" rows="4" value={formData.description} onChange={handleChange} required />
         </label>
 
@@ -158,7 +150,7 @@ function DonationForm() {
           <p>Fetching location...</p>
         )}
 
-        <button type="submit">Find Match</button>
+        <button type="submit">Request Match</button>
       </form>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import LoadingDialog from '../LoadingDialog/LoadingDialog';
 import MatchFoundDialog from '../MatchFoundDialog/MatchFoundDialog';
 import MatchNotFound from '../MatchNotFound/MatchNotFound';
@@ -16,82 +17,115 @@ function DonationRequestForm() {
     amount: '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [matchNotFound, setMatchNotFound] = useState(false);
   const [isMatchFound, setIsMatchFound] = useState(false);
-  const [donorName] = useState(formData.name); // You might want to pass actual donor name
-  const receiverName = ''; // Replace with actual receiver name if needed
+  const [matchNotFound, setMatchNotFound] = useState(false);
+  const [matchData, setMatchData] = useState(null);
+
+  // Utility: Haversine formula to calculate distance
+  const getDistanceInKm = (lat1, lng1, lat2, lng2) => {
+    const R = 6371;
+    const toRad = (val) => (val * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser.');
+      setError('Geolocation not supported by your browser.');
       return;
     }
 
-    const successCallback = (position) => {
-      setLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      });
-    };
+    const updateLocation = (pos) =>
+      setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
 
-    const errorCallback = (error) => {
-      setError(error.message || 'An error occurred while fetching location.');
-    };
+    const watchId = navigator.geolocation.watchPosition(updateLocation, (err) =>
+      setError(err.message)
+    );
 
-    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-    const watchId = navigator.geolocation.watchPosition(successCallback, errorCallback);
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
+    setIsMatchFound(false);
+    setMatchNotFound(false);
 
-    // Simulate API or backend check
-    setTimeout(() => {
-      setIsLoading(false);
-      const isMatch = checkForMatch();
+    try {
+      const role = localStorage.getItem('userType') || 'requester';
 
-      if (isMatch) {
+      // Submit donation/request
+      await axios.post('/api/notification', {
+        ...formData,
+        type: role,
+        location,
+      });
+
+      // Check for match
+      const { data: donors } = await axios.get('/api/donors');
+      const match = donors.find((donor) => {
+        const dist = getDistanceInKm(
+          location.lat,
+          location.lng,
+          donor.location.lat,
+          donor.location.lng
+        );
+        return dist <= 10;
+      });
+
+      if (match) {
+        setMatchData(match);
         setIsMatchFound(true);
       } else {
         setMatchNotFound(true);
       }
-    }, 3000);
-  };
 
-  const checkForMatch = () => {
-    // Replace this with actual match logic
-    const mockMatchCondition = false;
-    return mockMatchCondition;
+      // Reset form
+      setFormData({
+        name: '',
+        place: '',
+        purpose: '',
+        phone: '',
+        email: '',
+        amount: '',
+      });
+    } catch (err) {
+      console.error('Submission error:', err);
+      setError('Failed to submit. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTrack = () => {
     alert('Tracking started!');
   };
 
-  const closeMatchNotFoundDialog = () => {
-    setMatchNotFound(false);
-  };
-
   return (
     <div className="donation-request-section">
       {isLoading && <LoadingDialog />}
+
       {isMatchFound && (
         <MatchFoundDialog
-          donorName={donorName}
-          receiverName={receiverName}
+          donorName={formData.name}
+          receiverName={matchData?.name || 'Receiver'}
           onClose={() => setIsMatchFound(false)}
           onTrack={handleTrack}
         />
       )}
+
       {matchNotFound && (
-        <div className="overlay-container" onClick={closeMatchNotFoundDialog}>
+        <div className="overlay-container" onClick={() => setMatchNotFound(false)}>
           <MatchNotFound />
         </div>
       )}
@@ -102,50 +136,48 @@ function DonationRequestForm() {
 
         <label>
           Name:
-          <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+          <input name="name" value={formData.name} onChange={handleChange} required />
         </label>
         <label>
           Place Where Donation is Needed:
-          <input type="text" name="place" value={formData.place} onChange={handleChange} required />
+          <input name="place" value={formData.place} onChange={handleChange} required />
         </label>
         <label>
           Purpose:
-          <input type="text" name="purpose" value={formData.purpose} onChange={handleChange} required />
+          <input name="purpose" value={formData.purpose} onChange={handleChange} required />
         </label>
         <label>
           Phone Number:
-          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
+          <input name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
         </label>
         <label>
           Email:
-          <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+          <input name="email" type="email" value={formData.email} onChange={handleChange} required />
         </label>
         <label>
           Amount of Food Needed:
-          <input type="number" name="amount" value={formData.amount} onChange={handleChange} required />
+          <input name="amount" type="number" value={formData.amount} onChange={handleChange} required />
         </label>
 
         {location.lat && location.lng ? (
           <>
-            <p>Your current location: Latitude: {location.lat}, Longitude: {location.lng}</p>
+            <p>Your Location: Lat: {location.lat}, Lng: {location.lng}</p>
             <div className="map-preview-section">
-              <p>
-                <a
-                  href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  View on Google Maps
-                </a>
-              </p>
+              <a
+                href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                View on Google Maps
+              </a>
               <iframe
                 width="100%"
                 height="300"
                 frameBorder="0"
                 src={`https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
                 allowFullScreen
-                title="Requester Location Map"
+                title="Requester Location"
               ></iframe>
             </div>
           </>

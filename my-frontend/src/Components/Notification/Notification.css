@@ -1,86 +1,149 @@
 /* Container for notification icon */
 .notification-container {
-    position: relative;
-  }
-  
-  /* Notification Icon Style */
-  .notification-icon {
-    position: relative;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    font-size: 1.3rem;
-    color: #F2E9D8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  /* Blue dot indicating new notifications */
-  .notification-dot {
-    position: absolute;
-    top: -5px;   /* Adjusted for better visibility */
-    right: -5px; /* Adjusted for better visibility */
-    width: 12px; /* Slightly larger for better visibility */
-    height: 12px; /* Slightly larger for better visibility */
-    border-radius: 50%;
-    background-color: rgb(10, 126, 10); /* Green color for the dot */
-  }
-  
-  /* Dropdown notification box */
-  .notification-dropdown {
-    position: absolute;
-    top: 50px;
-    right: 0;
-    background-color: white;
-    border: 1px solid #ddd;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 250px;
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 999;
-    opacity: 0; /* Initial hidden state */
-    visibility: hidden; /* Ensure dropdown is not visible initially */
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  }
-  
-  /* Show dropdown when open */
-  .notification-dropdown.open {
-    opacity: 1;
-    visibility: visible;
-  }
-  
-  /* Style for notification items in the dropdown */
-  .notification-dropdown h4 {
-    margin-top: 0;
-    font-size: 16px;
-    color: #333;
-  }
-  
-  .notification-dropdown ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .notification-dropdown li {
-    margin: 10px 0;
-    font-size: 14px;
-    color: #333;
-    word-wrap: break-word; /* Ensure long words break properly */
-  }
-  
-  /* Style for notification icon (for example, a bell icon) */
-  .notification-icon img {
-    width: 100%;
-    height: 100%;
-  }
-  
-  /* Add a smooth transition to dropdown visibility */
-  .notification-dropdown {
-    transition: opacity 0.3s ease-in-out;
-    opacity: 1;
-  }
-  
+  position: relative;
+}
+
+/* Notification Icon Style */
+.notification-icon {
+  position: relative;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  color: #F2E9D8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Green dot indicating new notifications */
+.notification-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgb(10, 126, 10);
+  border: 2px solid white;
+}
+
+/* Dropdown notification box */
+.notification-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  width: 270px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 8px;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Show dropdown when open */
+.notification-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Dropdown heading */
+.notification-dropdown h4 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+/* Notification list */
+.notification-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Notification item */
+.notification-dropdown li {
+  font-size: 14px;
+  color: #444;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-dropdown li:hover {
+  background-color: #f3f3f3;
+}
+
+/* Dialog box overlay */
+.dialog-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 24px;
+  width: 320px;
+  max-width: 90vw;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  text-align: center;
+}
+
+/* Dialog text */
+.dialog-box p {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Buttons container */
+.dialog-buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+/* Accept & Reject buttons */
+.dialog-buttons button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dialog-buttons button:first-child {
+  background-color: #2e7d32; /* green */
+  color: white;
+}
+
+.dialog-buttons button:last-child {
+  background-color: #c62828; /* red */
+  color: white;
+}
+
+.dialog-buttons button:hover {
+  opacity: 0.9;
+}
+
+/* Custom scrollbar for dropdown */
+.notification-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
