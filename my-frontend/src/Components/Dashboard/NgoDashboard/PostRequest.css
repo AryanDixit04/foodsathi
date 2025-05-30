@@ -11,7 +11,7 @@
   transition: all 0.3s ease;
 }
 
-.post-request h2 {
+h2 {
   color: #2c3e50;
   font-size: 2rem;
   text-align: center;
