@@ -3,10 +3,18 @@ import LoadingDialog from '../LoadingDialog/LoadingDialog';
 import MatchFoundDialog from '../MatchFoundDialog/MatchFoundDialog';
 import MatchNotFound from '../MatchNotFound/MatchNotFound';
 import './DonationRequestForm.css';
+import axios from 'axios';
 
 function DonationRequestForm() {
   const [location, setLocation] = useState({ lat: null, lng: null });
   const [error, setError] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMatchFound, setIsMatchFound] = useState(false);
+  const [matchNotFound, setMatchNotFound] = useState(false);
+ const [matchData, setMatchData] = useState(null);
+
+
   const [formData, setFormData] = useState({
     name: '',
     place: '',
@@ -48,36 +56,65 @@ function DonationRequestForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    // Simulate API or backend check
-    setTimeout(() => {
-      setIsLoading(false);
-      const isMatch = checkForMatch();
 
-      if (isMatch) {
-        setIsMatchFound(true);
-      } else {
-        setMatchNotFound(true);
-      }
-    }, 3000);
-  };
+  setMatchNotFound(false);
+  setIsMatchFound(false);
 
-  const checkForMatch = () => {
-    // Replace this with actual match logic
-    const mockMatchCondition = false;
-    return mockMatchCondition;
-  };
+  try {
+    // Submit request
+    await axios.post('/api/notificationR', {
+      ...formData,
+      location,
+    });
 
-  const handleTrack = () => {
-    alert('Tracking started!');
-  };
+    // Optional delay to simulate loading
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-  const closeMatchNotFoundDialog = () => {
-    setMatchNotFound(false);
-  };
+    // Get existing donors
+    const { data: donors } = await axios.get('/api/notificationR');
+
+    // Match by place & amount only
+    const match = donors.find(
+      (donor) =>
+        donor.place.toLowerCase() === formData.place.toLowerCase() &&
+        donor.amount >= Number(formData.amount)
+    );
+
+    if (match) {
+      setIsMatchFound(true);
+      setMatchData(match);
+    } else {
+      setMatchNotFound(true);
+    }
+
+    // Reset form
+    setFormData({
+      name: '',
+      place: '',
+      purpose: '',
+      phone: '',
+      email: '',
+      amount: '',
+    });
+
+  } catch (err) {
+    console.error("Something went wrong:", err);
+  } finally {
+    setIsLoading(false);
+    setIsMatchFound(true);
+  }
+};
+
+
+ const closeMatchNotFoundDialog = () => {
+  setMatchNotFound(false);
+};
+
+
 
   return (
     <div className="donation-request-section">
