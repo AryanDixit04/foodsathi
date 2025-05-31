@@ -44,6 +44,14 @@ app.use('/api/ngo', ngoRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
+
+// Use MOCK API ONLY for /api/notification
+console.log('🧪 Using MOCK Notification API for /api/notification');
+app.use('/api/notificationR', require('./routes/notificationR')); // mock version
+app.use('/api/notificationD', require('./routes/notificationD')); // mock version
+
+// React fallback - serve index.html for any other frontend route
+
 // Fallback route to serve the frontend's index.html (Step 3)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));

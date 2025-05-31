@@ -8,7 +8,7 @@ function MatchFoundDialog({ donorName, receiverName, onClose }) {
   const navigate = useNavigate();
 
   const handleTrack = () => {
-    navigate('/track-donation-donor'); // ✅ Redirect to track-donation-donor
+    navigate('/track-donation-receiver'); // ✅ Redirect to track-donation-donor
   };
 
   return (

@@ -56,49 +56,64 @@
   border-bottom: 2px solid var(--leafColor);
   padding-bottom: 10px;
 }
+.section-box h2 {
+  font-size: 34px;
+  margin-bottom: 20px;
+  color: var(--PrimaryColor);
+  
+  padding-bottom: 10px;
+}
 
 /* Live Tracking */
 .timeline {
   border-left: 4px solid var(--leafColor);
-  padding-left: 40px;
+  padding-left: 30px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 24px;
+  position: relative;
 }
 
 .timeline-step {
-  position: relative;
   display: flex;
   align-items: center;
+  position: relative;
+  gap: 10px;
+  padding-left: 10px;
 }
 
 .timeline-step::before {
   content: '';
   position: absolute;
-  left: -32px;
+  left: -38px;
   top: 8px;
   width: 16px;
   height: 16px;
-  background-color: var(--leafColor);
+  background-color: #fff;
+  border: 4px solid var(--leafColor);
   border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 3px var(--leafColor);
+  box-shadow: 0 0 0 2px var(--accentColor);
   z-index: 1;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .timeline-step.active::before {
   background-color: var(--successGreen);
+  border-color: var(--successGreen);
 }
 
 .timeline-icon {
-  font-size: 22px;
+  font-size: 20px;
   color: var(--PrimaryColor);
-  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .timeline-label {
-  font-size: 17px;
+  font-size: 16px;
   color: var(--textColor);
+  font-weight: 500;
 }
 
 /* Sathi Icon */
