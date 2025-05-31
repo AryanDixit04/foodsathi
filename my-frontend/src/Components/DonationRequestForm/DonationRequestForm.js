@@ -3,6 +3,7 @@ import LoadingDialog from '../LoadingDialog/LoadingDialog';
 import MatchFoundDialog from '../MatchFoundDialog/MatchFoundDialogR';
 import MatchNotFound from '../MatchNotFound/MatchNotFound';
 import './DonationRequestForm.css';
+import axios from 'axios';
 
 function DonationRequestForm() {
   const [location, setLocation] = useState({ lat: null, lng: null });
@@ -10,7 +11,7 @@ function DonationRequestForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isMatchFound, setIsMatchFound] = useState(false);
   const [matchNotFound, setMatchNotFound] = useState(false);
-  const [matchData, setMatchData] = useState(null);
+ const [matchData, setMatchData] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,59 +51,62 @@ function DonationRequestForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    setMatchNotFound(false);
-    setIsMatchFound(false);
+  setMatchNotFound(false);
+  setIsMatchFound(false);
 
-    try {
-      // Submit request
-      await axios.post('/api/notificationR', {
-        ...formData,
-        location,
-      });
+  try {
+    // Submit request
+    await axios.post('/api/notificationR', {
+      ...formData,
+      location,
+    });
 
-      // Get existing donors
-      const { data: donors } = await axios.get('/api/notificationR');
+    // Optional delay to simulate loading
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      // Match by place & amount only
-      const match = donors.find(
-        (donor) =>
-          donor.place.toLowerCase() === formData.place.toLowerCase() &&
-          donor.amount >= Number(formData.amount)
-      );
+    // Get existing donors
+    const { data: donors } = await axios.get('/api/notificationR');
 
-      if (isMatch) {
-        setIsMatchFound(true);
-      } else {
-        setMatchNotFound(true);
-      }
-    }, 3000);
-  };
+    // Match by place & amount only
+    const match = donors.find(
+      (donor) =>
+        donor.place.toLowerCase() === formData.place.toLowerCase() &&
+        donor.amount >= Number(formData.amount)
+    );
 
-
-      // Reset form
-      setFormData({
-        name: '',
-        place: '',
-        purpose: '',
-        phone: '',
-        email: '',
-        amount: '',
-      });
-    } catch (err) {
-      //setError('Something went wrong. Try again.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+    if (match) {
       setIsMatchFound(true);
+      setMatchData(match);
+    } else {
+      setMatchNotFound(true);
     }
-  };
+
+    // Reset form
+    setFormData({
+      name: '',
+      place: '',
+      purpose: '',
+      phone: '',
+      email: '',
+      amount: '',
+    });
+
+  } catch (err) {
+    console.error("Something went wrong:", err);
+  } finally {
+    setIsLoading(false);
+    setIsMatchFound(true);
+  }
+};
 
 
- 
+ const closeMatchNotFoundDialog = () => {
+  setMatchNotFound(false);
+};
 
 
   return (
