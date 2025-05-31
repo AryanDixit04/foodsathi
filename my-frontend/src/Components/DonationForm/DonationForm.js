@@ -3,24 +3,23 @@ import LoadingDialog from '../LoadingDialog/LoadingDialog';
 import MatchFoundDialog from '../MatchFoundDialog/MatchFoundDialog';
 import MatchNotFound from '../MatchNotFound/MatchNotFound';
 import './DonationForm.css';
-import axios from 'axios';
 
 function DonationForm() {
-  const [locationCoords, setLocationCoords] = useState({ lat: null, lng: null });
+  const [location, setLocation] = useState({ lat: null, lng: null });
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    location: '',
+    place: '',
     phone: '',
     email: '',
-    quantity: '',
+    amount: '',
     description: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [matchNotFound, setMatchNotFound] = useState(false);
   const [isMatchFound, setIsMatchFound] = useState(false);
-
-
+  const [donorName] = useState(formData.name);
+  const receiverName = ''; // Replace with actual receiver name
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -29,7 +28,7 @@ function DonationForm() {
     }
 
     const successCallback = (position) => {
-      setLocationCoords({
+      setLocation({
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       });
@@ -56,101 +55,25 @@ function DonationForm() {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      await new Promise((res) => setTimeout(res, 3000));
-
-      await axios.post('/api/notificationD', {
-        ...formData,
-        location: locationCoords,
-      });
-
-      const mockExistingNgos = [
-        {
-          name: "Helping Hands",
-          location: "bkt",
-          lat: 26.8467,
-          lng: 80.9462,
-          minQuantityNeeded: 5,
-        },
-        {
-          name: "Food For All",
-          location: "bncet",
-          lat: 26.849,
-          lng: 80.996,
-          minQuantityNeeded: 20,
-        },
-      ];
-
-      function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Radius of the earth in km
-        const dLat = (lat2 - lat1) * (Math.PI / 180);
-        const dLon = (lon2 - lon1) * (Math.PI / 180);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-          Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-      }
-
-      const matchFound = mockExistingNgos.some((ngo) => {
-        const locationMatches = ngo.location.toLowerCase() === formData.location.toLowerCase();
-        const quantityOk = parseInt(formData.quantity) >= ngo.minQuantityNeeded;
-
-        if (!locationMatches || !quantityOk) return false;
-
-        if (locationCoords.lat && locationCoords.lng) {
-          const distance = getDistanceFromLatLonInKm(
-            locationCoords.lat,
-            locationCoords.lng,
-            ngo.lat,
-            ngo.lng
-          );
-          console.log(`Distance to NGO "${ngo.name}" is ${distance.toFixed(2)} km`);
-          return true;
-        } else {
-          return true;
-        }
-      });
-
-      if (matchFound) {
-
+    setTimeout(() => {
+      setIsLoading(false);
+      const isMatch = false; // Replace with actual match-checking logic
+      if (isMatch) {
         setIsMatchFound(true);
       } else {
         setMatchNotFound(true);
       }
-
-      console.log("Donation Submission Data:", formData);
-      console.log("Donor Location:", locationCoords);
-
-      setFormData({
-        name: '',
-        location: '',
-        phone: '',
-        email: '',
-        quantity: '',
-        description: '',
-      });
-    } catch (err) {
-      console.error("Submission error:", err);
-     // setError("Failed to submit. Please try again.");
-    } finally {
-      setIsLoading(false);
-      setIsMatchFound(true);
-    }
+      console.log("Form submitted:", formData);
+      console.log("Current Location:", location);
+    }, 3000);
   };
 
   const handleTrack = () => {
-
-    
-
     alert('Tracking started!');
-
   };
 
   const closeModal = () => {
@@ -163,10 +86,8 @@ function DonationForm() {
       {isLoading && <LoadingDialog />}
       {isMatchFound && (
         <MatchFoundDialog
-
-          donorName={formData.name}
-          receiverName="Akshya Patra"
-
+          donorName={donorName}
+          receiverName={receiverName}
           onClose={closeModal}
           onTrack={handleTrack}
         />
@@ -187,10 +108,8 @@ function DonationForm() {
           <input type="text" name="name" value={formData.name} onChange={handleChange} required />
         </label>
         <label>
-
-          Location:
-          <input type="text" name="location" value={formData.location} onChange={handleChange} required />
-
+          Place:
+          <input type="text" name="place" value={formData.place} onChange={handleChange} required />
         </label>
         <label>
           Phone Number:
@@ -201,25 +120,23 @@ function DonationForm() {
           <input type="email" name="email" value={formData.email} onChange={handleChange} required />
         </label>
         <label>
-
-          Quantity donated:
-          <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} required />
-
+          Amount:
+          <input type="number" name="amount" value={formData.amount} onChange={handleChange} required />
         </label>
         <label>
           Description of Food:
           <textarea name="description" rows="4" value={formData.description} onChange={handleChange} required />
         </label>
 
-        {locationCoords.lat && locationCoords.lng ? (
+        {location.lat && location.lng ? (
           <>
             <p>
-              Your current location: Latitude: {locationCoords.lat}, Longitude: {locationCoords.lng}
+              Your current location: Latitude: {location.lat}, Longitude: {location.lng}
             </p>
             <div className="map-preview">
               <p>
                 <a
-                  href={`https://www.google.com/maps?q=${locationCoords.lat},${locationCoords.lng}`}
+                  href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 underline"
@@ -231,7 +148,7 @@ function DonationForm() {
                 width="100%"
                 height="300"
                 frameBorder="0"
-                src={`https://www.google.com/maps?q=${locationCoords.lat},${locationCoords.lng}&z=15&output=embed`}
+                src={`https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
                 allowFullScreen
                 title="Donor Location Map"
               ></iframe>

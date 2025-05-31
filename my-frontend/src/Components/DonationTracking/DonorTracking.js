@@ -7,7 +7,7 @@ import { validOtps } from '../DonationTracking/OtpList';
 import './Tracking.css';
 
 const DonorTracking = () => {
-  const [progress, setProgress] = useState(0); // initially no active donation
+  const [progress, setProgress] = useState(-1); // initially no active donation
   const [timeLimitExpired, setTimeLimitExpired] = useState(false);
   const [otp, setOtp] = useState("");
   const [showOtpPrompt, setShowOtpPrompt] = useState(false);
@@ -103,11 +103,9 @@ const DonorTracking = () => {
         {/* Current Status */}
         <div className="section-box">
           <h2>Current Donation Status</h2>
-          {progress === -1? (
+          {progress === -1 ? (
             <>
-              <p>
-      Donation: <strong>Akshaya Patra Foundation</strong> via volunteer <strong>Ravi Sharma</strong> on <strong>2025-05-31</strong>.
-    </p>
+              <p>No current active donations.</p>
               <button onClick={handleNewDonation} className="retry-button mt-2">
                 ➕ Request Donation
               </button>

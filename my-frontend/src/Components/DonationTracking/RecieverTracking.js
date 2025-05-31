@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { MdReplay, MdCheckCircle, MdLocationOn } from "react-icons/md";
 import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
+import { validOtps } from '../DonationTracking/OtpList';
 import './Tracking.css';
 
 const ReceiverTracking = () => {
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(-1); // initially no active donation
   const [timeLimitExpired, setTimeLimitExpired] = useState(false);
+  const [otp, setOtp] = useState("");
   const [showOtpPrompt, setShowOtpPrompt] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState("");
   const navigate = useNavigate();
@@ -18,39 +20,37 @@ const ReceiverTracking = () => {
     { label: "Received Donation", icon: <MdCheckCircle /> },
   ];
 
+  const otpPool = validOtps;
   const [donationHistory, setDonationHistory] = useState([
     { date: "2025-05-25", time: "14:00", donor: "SpiceHub", receiver: "XYZ Community Center", status: "Completed" },
     { date: "2025-05-20", time: "13:00", donor: "TasteBuds", receiver: "UrbanAid Shelter", status: "Completed" },
     { date: "2025-05-15", time: "12:00", donor: "FlavourSpot", receiver: "GreenServe", status: "Pending" },
   ]);
 
-  // Advance progress handler
   const advanceProgress = () => {
-    if (progress < steps.length - 1) {
-      setProgress(prev => prev + 1);
-    } else if (progress === steps.length - 1) {
-      // Show OTP prompt at last step
-      setGeneratedOtp("2164"); // fixed OTP
+    if (progress === steps.length - 1) {
       setShowOtpPrompt(true);
+    } else {
+      setProgress(prev => prev + 1);
     }
   };
 
-  // Confirm donation without OTP verification (since fixed)
   const completeDonation = () => {
-    const updated = [...donationHistory];
-    updated[0].status = "Completed";
-    setDonationHistory(updated);
-    setProgress(steps.length);  // mark complete
-    setShowOtpPrompt(false);
-    setGeneratedOtp("");
-    alert("Donation confirmed successfully!");
+    if (validOtps.includes(otp)) {
+      const updated = [...donationHistory];
+      updated[0].status = "Completed";
+      setDonationHistory(updated);
+      setProgress(steps.length); // to indicate completion
+      setShowOtpPrompt(false);
+      setGeneratedOtp("");
+    } else {
+      alert("Invalid OTP. Please try again.");
+    }
   };
 
   const retryMatch = () => {
     setProgress(0);
     setTimeLimitExpired(false);
-    setShowOtpPrompt(false);
-    setGeneratedOtp("");
   };
 
   const handleNewDonation = () => {
@@ -63,6 +63,15 @@ const ReceiverTracking = () => {
       return () => clearTimeout(timer);
     }
   }, [progress]);
+
+ useEffect(() => {
+  if (progress === steps.length - 1 && !generatedOtp) {
+    const randomIndex = Math.floor(Math.random() * otpPool.length);
+    const otp = otpPool[randomIndex];
+    setGeneratedOtp(otp);
+    console.log("Generated OTP:", otp);
+  }
+}, [progress, generatedOtp, steps.length, otpPool]);
 
   const analyticsData = {
     labels: ["18-25", "26-35", "36-45", "46+"],
@@ -90,8 +99,7 @@ const ReceiverTracking = () => {
           <h2>Current Donation Status</h2>
           {progress === -1 ? (
             <>
-              <p> Donation from:<strong> Fauji Dhaba </strong> via volunteer <strong>Deepak Verma</strong> on <strong>2025-05-31</strong>.
-              </p>
+              <p>No current active donations.</p>
               <button onClick={handleNewDonation} className="retry-button mt-2">
                 ➕ Request Donation
               </button>
@@ -146,13 +154,18 @@ const ReceiverTracking = () => {
               )}
             </div>
 
-            {/* OTP prompt */}
             {showOtpPrompt && (
               <div className="otp-section mt-4">
-                <h3>Confirm receipt using OTP:</h3>
-                <p className="otp-display"><strong>OTP: {generatedOtp}</strong></p>
+                <h3>Enter OTP to confirm receipt:</h3>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  className="otp-input"
+                />
                 <button onClick={completeDonation} className="advance-button mt-2">
-                  Done
+                  Verify & Confirm
                 </button>
               </div>
             )}
