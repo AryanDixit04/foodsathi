@@ -20,6 +20,8 @@ function DonationForm() {
   const [matchNotFound, setMatchNotFound] = useState(false);
   const [isMatchFound, setIsMatchFound] = useState(false);
 
+
+
   useEffect(() => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser.');
@@ -53,6 +55,7 @@ function DonationForm() {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -116,6 +119,7 @@ function DonationForm() {
       });
 
       if (matchFound) {
+
         setIsMatchFound(true);
       } else {
         setMatchNotFound(true);
@@ -142,7 +146,11 @@ function DonationForm() {
   };
 
   const handleTrack = () => {
-    alert("Tracking started!");
+
+    
+
+    alert('Tracking started!');
+
   };
 
   const closeModal = () => {
@@ -155,12 +163,15 @@ function DonationForm() {
       {isLoading && <LoadingDialog />}
       {isMatchFound && (
         <MatchFoundDialog
+
           donorName={formData.name}
-          receiverName="NGO"
+          receiverName="Akshya Patra"
+
           onClose={closeModal}
           onTrack={handleTrack}
         />
       )}
+
       {matchNotFound && (
         <div className="overlay">
           <MatchNotFound onClose={closeModal} />
@@ -168,7 +179,7 @@ function DonationForm() {
       )}
 
       <form className="donation-form" onSubmit={handleSubmit}>
-        <h2>Donation Form</h2>
+        <h2>Donate Food</h2>
         {error && <p className="error">{error}</p>}
 
         <label>
@@ -176,8 +187,10 @@ function DonationForm() {
           <input type="text" name="name" value={formData.name} onChange={handleChange} required />
         </label>
         <label>
+
           Location:
           <input type="text" name="location" value={formData.location} onChange={handleChange} required />
+
         </label>
         <label>
           Phone Number:
@@ -188,11 +201,13 @@ function DonationForm() {
           <input type="email" name="email" value={formData.email} onChange={handleChange} required />
         </label>
         <label>
+
           Quantity donated:
           <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} required />
+
         </label>
         <label>
-          Description of Donation with expiry:
+          Description of Food:
           <textarea name="description" rows="4" value={formData.description} onChange={handleChange} required />
         </label>
 
@@ -226,7 +241,7 @@ function DonationForm() {
           <p>Fetching location...</p>
         )}
 
-        <button type="submit">Request Match</button>
+        <button type="submit">Find Match</button>
       </form>
     </div>
   );

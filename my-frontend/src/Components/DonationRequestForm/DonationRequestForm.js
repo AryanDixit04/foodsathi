@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import LoadingDialog from '../LoadingDialog/LoadingDialog';
 import MatchFoundDialog from '../MatchFoundDialog/MatchFoundDialogR';
 import MatchNotFound from '../MatchNotFound/MatchNotFound';
@@ -22,30 +21,39 @@ function DonationRequestForm() {
     amount: '',
   });
 
+
+
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError('Geolocation not supported by your browser.');
+      setError('Geolocation is not supported by your browser.');
       return;
     }
 
-    const updateLocation = (pos) =>
-      setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    const successCallback = (position) => {
+      setLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+    };
 
-    const watchId = navigator.geolocation.watchPosition(updateLocation, (err) =>
-      setError(err.message)
-    );
+    const errorCallback = (error) => {
+      setError(error.message || 'An error occurred while fetching location.');
+    };
 
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+    const watchId = navigator.geolocation.watchPosition(successCallback, errorCallback);
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
+
     setMatchNotFound(false);
     setIsMatchFound(false);
 
@@ -66,12 +74,14 @@ function DonationRequestForm() {
           donor.amount >= Number(formData.amount)
       );
 
-      if (match) {
-        setMatchData(match);
+      if (isMatch) {
         setIsMatchFound(true);
       } else {
         setMatchNotFound(true);
       }
+    }, 3000);
+  };
+
 
       // Reset form
       setFormData({
@@ -91,21 +101,25 @@ function DonationRequestForm() {
     }
   };
 
+
+ 
+
+
   return (
     <div className="donation-request-section">
       {isLoading && <LoadingDialog />}
-
       {isMatchFound && (
         <MatchFoundDialog
+
           donorName={matchData?.name}
           receiverName={formData.name}
+
           onClose={() => setIsMatchFound(false)}
           onTrack={() => alert('Tracking started!')}
         />
       )}
-
       {matchNotFound && (
-        <div className="overlay-container" onClick={() => setMatchNotFound(false)}>
+        <div className="overlay-container" onClick={closeMatchNotFoundDialog}>
           <MatchNotFound />
         </div>
       )}
@@ -113,6 +127,7 @@ function DonationRequestForm() {
       <form onSubmit={handleSubmit}>
         <h2>Request Food Donation</h2>
         {error && <p className="error">{error}</p>}
+
 
         <label>Name:
           <input name="name" value={formData.name} onChange={handleChange} required />
@@ -131,27 +146,30 @@ function DonationRequestForm() {
         </label>
         <label>Amount of Food Needed:
           <input name="amount" type="number" value={formData.amount} onChange={handleChange} required />
+
         </label>
 
         {location.lat && location.lng ? (
           <>
-            <p>Your Location: Lat: {location.lat}, Lng: {location.lng}</p>
+            <p>Your current location: Latitude: {location.lat}, Longitude: {location.lng}</p>
             <div className="map-preview-section">
-              <a
-                href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline"
-              >
-                View on Google Maps
-              </a>
+              <p>
+                <a
+                  href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View on Google Maps
+                </a>
+              </p>
               <iframe
                 width="100%"
                 height="300"
                 frameBorder="0"
                 src={`https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
                 allowFullScreen
-                title="Requester Location"
+                title="Requester Location Map"
               ></iframe>
             </div>
           </>
